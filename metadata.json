@@ -1,0 +1,6 @@
+{
+  "name": "MediGuide AI",
+  "description": "Personal medical record organizer and AI health assistant supporting English, Hindi, and Italian.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
