@@ -14,7 +14,10 @@ import {
   CalendarClock, 
   Apple, 
   Sparkles,
-  Clock
+  Clock,
+  Zap,
+  Stethoscope,
+  Layers
 } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { usePatient } from '../context/PatientContext';
@@ -23,15 +26,26 @@ interface DashboardViewProps {
   onNavigate: (view: string) => void;
   onQuickSymptomCheck: (symptoms: string) => void;
   onQuickAiChat: (query: string) => void;
+  onOpenSyncCenter?: () => void;
 }
 
 export const DashboardView: React.FC<DashboardViewProps> = ({
   onNavigate,
   onQuickSymptomCheck,
-  onQuickAiChat
+  onQuickAiChat,
+  onOpenSyncCenter
 }) => {
   const { t, language } = useLanguage();
-  const { profile, medications, reports, toggleMedicationTaken, healthMetrics } = usePatient();
+  const { 
+    profile, 
+    medications, 
+    reports, 
+    toggleMedicationTaken, 
+    healthMetrics,
+    symptomHistory,
+    dietFocus,
+    syncInsights
+  } = usePatient();
   const [quickSymptomsText, setQuickSymptomsText] = useState('');
   const [quickAiText, setQuickAiText] = useState('');
 
@@ -85,6 +99,128 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 Allergy: {allergy}
               </span>
             ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Integrated Health Synchronization Pipeline (5 Modules) */}
+      <div className="p-4 sm:p-5 rounded-3xl bg-white border border-teal-200/80 shadow-xs space-y-3.5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 rounded-xl bg-teal-600 text-white shadow-2xs">
+              <Zap className="w-4 h-4" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm sm:text-base font-extrabold text-slate-900 tracking-tight">
+                  {t('pipelineActive') || 'Interconnected Health Pipeline'}
+                </h3>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-100 text-emerald-800 uppercase tracking-tight">
+                  5 Systems Live
+                </span>
+              </div>
+              <p className="text-xs text-slate-500">
+                Bidirectional synchronization between Symptoms, Records, Diet, Medicines & Reports
+              </p>
+            </div>
+          </div>
+
+          {onOpenSyncCenter && (
+            <button
+              onClick={onOpenSyncCenter}
+              className="px-3.5 py-1.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-2xs cursor-pointer self-start sm:self-auto"
+            >
+              <Layers className="w-3.5 h-3.5" />
+              <span>Launch Sync Hub</span>
+            </button>
+          )}
+        </div>
+
+        {/* 5 Interconnected Pipeline Modules */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 text-xs">
+          {/* 1. Symptom Checker */}
+          <div
+            onClick={() => onNavigate('symptoms')}
+            className="p-3 rounded-2xl bg-teal-50/60 border border-teal-200 hover:border-teal-400 hover:bg-teal-50 transition cursor-pointer flex flex-col justify-between space-y-1.5 group"
+          >
+            <div className="flex items-center justify-between">
+              <div className="p-1.5 rounded-lg bg-teal-600 text-white">
+                <Stethoscope className="w-3.5 h-3.5" />
+              </div>
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+            </div>
+            <div>
+              <h4 className="font-bold text-slate-900 group-hover:text-teal-700 leading-tight">1. Symptoms</h4>
+              <p className="text-[11px] text-slate-500 truncate">{symptomHistory.length} logs • Active triage</p>
+            </div>
+          </div>
+
+          {/* 2. Medical Recorder */}
+          <div
+            onClick={() => onNavigate('records')}
+            className="p-3 rounded-2xl bg-blue-50/60 border border-blue-200 hover:border-blue-400 hover:bg-blue-50 transition cursor-pointer flex flex-col justify-between space-y-1.5 group"
+          >
+            <div className="flex items-center justify-between">
+              <div className="p-1.5 rounded-lg bg-blue-600 text-white">
+                <FileText className="w-3.5 h-3.5" />
+              </div>
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+            </div>
+            <div>
+              <h4 className="font-bold text-slate-900 group-hover:text-blue-700 leading-tight">2. Records</h4>
+              <p className="text-[11px] text-slate-500 truncate">{reports.length} files decoded</p>
+            </div>
+          </div>
+
+          {/* 3. Diet & Lifestyle */}
+          <div
+            onClick={() => onNavigate('diet_lifestyle')}
+            className="p-3 rounded-2xl bg-emerald-50/60 border border-emerald-200 hover:border-emerald-400 hover:bg-emerald-50 transition cursor-pointer flex flex-col justify-between space-y-1.5 group"
+          >
+            <div className="flex items-center justify-between">
+              <div className="p-1.5 rounded-lg bg-emerald-600 text-white">
+                <Apple className="w-3.5 h-3.5" />
+              </div>
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+            </div>
+            <div>
+              <h4 className="font-bold text-slate-900 group-hover:text-emerald-700 leading-tight">3. Diet & Life</h4>
+              <p className="text-[11px] text-slate-500 truncate">{dietFocus.slice(0, 16)}...</p>
+            </div>
+          </div>
+
+          {/* 4. Medicine Tracker */}
+          <div
+            onClick={() => onNavigate('medicines')}
+            className="p-3 rounded-2xl bg-indigo-50/60 border border-indigo-200 hover:border-indigo-400 hover:bg-indigo-50 transition cursor-pointer flex flex-col justify-between space-y-1.5 group"
+          >
+            <div className="flex items-center justify-between">
+              <div className="p-1.5 rounded-lg bg-indigo-600 text-white">
+                <CalendarClock className="w-3.5 h-3.5" />
+              </div>
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+            </div>
+            <div>
+              <h4 className="font-bold text-slate-900 group-hover:text-indigo-700 leading-tight">4. Medicines</h4>
+              <p className="text-[11px] text-slate-500 truncate">{medications.length} active meds ({adherencePct}%)</p>
+            </div>
+          </div>
+
+          {/* 5. Report Explainer */}
+          <div
+            onClick={() => onNavigate('report_explanation')}
+            className="p-3 rounded-2xl bg-amber-50/60 border border-amber-200 hover:border-amber-400 hover:bg-amber-50 transition cursor-pointer flex flex-col justify-between space-y-1.5 group col-span-2 sm:col-span-1"
+          >
+            <div className="flex items-center justify-between">
+              <div className="p-1.5 rounded-lg bg-amber-600 text-white">
+                <Activity className="w-3.5 h-3.5" />
+              </div>
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+            </div>
+            <div>
+              <h4 className="font-bold text-slate-900 group-hover:text-amber-700 leading-tight">5. Reports</h4>
+              <p className="text-[11px] text-slate-500 truncate">9 parameters live</p>
+            </div>
           </div>
         </div>
       </div>

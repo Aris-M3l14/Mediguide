@@ -130,6 +130,18 @@ function generateLocalSymptomAnalysis(
         enteredSymptoms: symptoms,
         isEmergency: true,
         severity: 'emergency',
+        timeframe: 'तत्काल आपातकालीन चिकित्सा (तुरंत)',
+        recommendedSpecialist: 'आपातकालीन चिकित्सा विशेषज्ञ (Emergency Physician) / कार्डियोलॉजिस्ट',
+        redFlags: [
+          'सीने में भारी दबाव या बांह में दर्द',
+          'सांस लेने में अत्यधिक कठिनाई',
+          'चेहरे या बांह में अचानक कमजोरी (स्ट्रोक के लक्षण)'
+        ],
+        questionsForDoctor: [
+          'क्या यह एक्यूट कोरोनरी सिंड्रोम या रेस्पिरेटरी इमरजेंसी है?',
+          'क्या तत्काल ईसीजी (ECG) या ट्रोपोनिन टेस्ट की आवश्यकता है?'
+        ],
+        relatedConditionsInProfile: profile?.existingConditions || [],
         explanations: [
           'आपके द्वारा वर्णित लक्षण (जैसे सीने में गंभीर दबाव, सांस लेने में अत्यधिक कठिनाई या अचानक कमजोरी) चिकित्सीय आपातकाल (Medical Emergency) के संकेत हो सकते हैं।'
         ],
@@ -154,6 +166,18 @@ function generateLocalSymptomAnalysis(
         enteredSymptoms: symptoms,
         isEmergency: true,
         severity: 'emergency',
+        timeframe: 'Intervento medico immediato (Pronto Soccorso)',
+        recommendedSpecialist: 'Medico d\'Urgenza / Cardiologo',
+        redFlags: [
+          'Oppressione al petto che si irradia al braccio sinistro o mandibola',
+          'Grave dispnea / sensazione di soffocamento',
+          'Asimmetria facciale o deficit motorio improvviso (segni FAST di ictus)'
+        ],
+        questionsForDoctor: [
+          'Si tratta di una sindrome coronarica acuta?',
+          'È necessario eseguire subito un ECG o il dosaggio delle troponine?'
+        ],
+        relatedConditionsInProfile: profile?.existingConditions || [],
         explanations: [
           'I sintomi descritti (come dolore toracico, grave affanno o perdita improvvisa di forza) possono indicare un’emergenza medica acuta.'
         ],
@@ -177,6 +201,18 @@ function generateLocalSymptomAnalysis(
       enteredSymptoms: symptoms,
       isEmergency: true,
       severity: 'emergency',
+      timeframe: 'Immediate Emergency Care (Now)',
+      recommendedSpecialist: 'Emergency Medicine Physician / Cardiologist',
+      redFlags: [
+        'Crushing chest pressure or left arm radiation',
+        'Severe sudden shortness of breath',
+        'Facial droop, arm drift, or slurred speech (Stroke FAST indicators)'
+      ],
+      questionsForDoctor: [
+        'Could this be an acute coronary or thromboembolic event?',
+        'Do I need an immediate 12-lead ECG, troponin, or chest imaging?'
+      ],
+      relatedConditionsInProfile: profile?.existingConditions || [],
       explanations: [
         'The symptoms you entered (such as acute chest pain, shortness of breath, or sudden weakness) indicate a potential medical emergency requiring immediate in-person evaluation.'
       ],
@@ -211,6 +247,21 @@ function generateLocalSymptomAnalysis(
       enteredSymptoms: symptoms,
       isEmergency: false,
       severity,
+      timeframe: severity === 'moderate' ? '24 से 48 घंटों में परामर्श लें' : '2-3 दिनों में यदि सुधार न हो तो दिखाएं',
+      recommendedSpecialist: lower.includes('stomach') || lower.includes('पेट') ? 'गैस्ट्रोएंटेरोलॉजिस्ट / फिजिशियन' : lower.includes('dizziness') || lower.includes('चक्कर') ? 'जनरल फिजिशियन / कार्डियोलॉजिस्ट' : 'जनरल फिजिशियन',
+      redFlags: [
+        'बुखार 102°F से ऊपर जाना',
+        'अचानक दृष्टि धुंधली होना या तेज चक्कर आना',
+        'लगातार उल्टी या निर्जलीकरण'
+      ],
+      questionsForDoctor: [
+        'क्या यह लक्षण मेरी बीपी की दवा (Telmisartan) से संबंधित हो सकते हैं?',
+        'क्या मुझे कोई अतिरिक्त रक्त जांच करवाने की आवश्यकता है?'
+      ],
+      relatedConditionsInProfile: (profile?.existingConditions || []).filter(c => 
+        (lower.includes('dizziness') || lower.includes('headache')) && c.toLowerCase().includes('hypertension') ||
+        (lower.includes('thirst') || lower.includes('fatigue')) && c.toLowerCase().includes('diabetes')
+      ),
       explanations: [
         `दर्ज लक्षण: "${symptoms}". यह अक्सर मौसमी संक्रमण, हल्के वायरल तनाव, या शरीर में पानी की कमी अथवा थकावट से संबंधित हो सकते हैं।`,
         hasAllergyConflict ? 'ध्यान दें: आपके प्रोफाइल में दर्ज एलर्जी का इतिहास भी इस स्थिति से जुड़ा हो सकता है।' : 'आपके वर्तमान स्वास्थ्य इतिहास के साथ कोई बड़ा प्रतिकूल मेल नहीं दिखा।'
@@ -239,6 +290,18 @@ function generateLocalSymptomAnalysis(
       enteredSymptoms: symptoms,
       isEmergency: false,
       severity,
+      timeframe: severity === 'moderate' ? 'Visita medica consigliata entro 24-48 ore' : 'Monitorare per 2-3 giorni; consultare se non migliora',
+      recommendedSpecialist: lower.includes('stomaco') || lower.includes('bruciore') ? 'Gastroenterologo / Medico di Base' : lower.includes('vertigini') ? 'Medico di Medicina Generale / Cardiologo' : 'Medico di Medicina Generale',
+      redFlags: [
+        'Febbre che supera i 38.5°C resistente agli antipiretici',
+        'Comparsa di marcata debolezza o svenimenti',
+        'Disidratazione o vomito incoercibile'
+      ],
+      questionsForDoctor: [
+        'Questi sintomi possono essere legati all\'adeguamento della terapia antiipertensiva?',
+        'È utile monitorare la pressione a casa per qualche giorno?'
+      ],
+      relatedConditionsInProfile: (profile?.existingConditions || []),
       explanations: [
         `Sintomi riferiti: "${symptoms}". Possono corrispondere a una sindrome da raffreddamento, affaticamento temporaneo o lieve disidratazione.`,
         'Non emergono indicatori di rischio acuto immediato.'
@@ -266,6 +329,25 @@ function generateLocalSymptomAnalysis(
     enteredSymptoms: symptoms,
     isEmergency: false,
     severity,
+    timeframe: severity === 'moderate' ? 'Schedule clinical consultation within 24 to 48 hours' : 'Monitor closely; consult physician if persisting past 3 days',
+    recommendedSpecialist: lower.includes('stomach') || lower.includes('acid') || lower.includes('reflux')
+      ? 'Gastroenterologist / Primary Care Physician'
+      : lower.includes('dizziness') || lower.includes('headache')
+      ? 'Primary Care Physician / Cardiologist'
+      : 'Primary Care Physician (GP / Internist)',
+    redFlags: [
+      'Temperature rising above 101.5°F (38.6°C) or severe chills',
+      'Sudden onset of severe focal pain or dizziness causing unsteady gait',
+      'Inability to tolerate fluids or signs of significant dehydration'
+    ],
+    questionsForDoctor: [
+      'Could these symptoms be related to my blood pressure medication (Telmisartan) or dosage?',
+      'Are there specific self-monitoring parameters (like daily BP/glucose logs) you recommend?'
+    ],
+    relatedConditionsInProfile: (profile?.existingConditions || []).filter(c =>
+      (lower.includes('dizziness') || lower.includes('headache')) && c.toLowerCase().includes('hypertension') ||
+      (lower.includes('thirst') || lower.includes('fatigue')) && c.toLowerCase().includes('diabetes')
+    ),
     explanations: [
       `Reported symptoms: "${symptoms}". These frequently correlate with mild viral irritation, seasonal changes, or temporary fatigue and mild dehydration.`,
       profile?.existingConditions?.length ? `Contextual note: Considered against your profile conditions (${profile.existingConditions.join(', ')}).` : 'No adverse interactions detected in baseline health profile.'

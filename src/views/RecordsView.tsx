@@ -10,20 +10,30 @@ import {
   AlertCircle,
   File,
   Eye,
-  Filter
+  Filter,
+  Zap,
+  CalendarClock,
+  Apple,
+  Activity,
+  Stethoscope
 } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { usePatient } from '../context/PatientContext';
 import { MedicalReport } from '../types';
+import { SynchronizedContextBar } from '../components/HealthSyncCenter';
 
 interface RecordsViewProps {
   onNavigateToExplanation: (reportId: string) => void;
   onNavigateToPrescription: () => void;
+  onNavigate?: (view: string) => void;
+  onOpenSyncCenter?: () => void;
 }
 
 export const RecordsView: React.FC<RecordsViewProps> = ({
   onNavigateToExplanation,
-  onNavigateToPrescription
+  onNavigateToPrescription,
+  onNavigate,
+  onOpenSyncCenter
 }) => {
   const { t } = useLanguage();
   const { reports, addReport, deleteReport } = usePatient();
@@ -40,11 +50,13 @@ export const RecordsView: React.FC<RecordsViewProps> = ({
     const extension = file.name.split('.').pop()?.toLowerCase() || 'pdf';
     const isImage = ['png', 'jpg', 'jpeg'].includes(extension);
 
+    const isPrescription = isImage || file.name.toLowerCase().includes('rx') || file.name.toLowerCase().includes('prescription');
+
     const newReport: MedicalReport = {
       id: `rep_${Date.now()}`,
       title: file.name.replace(/\.[^/.]+$/, "").replace(/_/g, ' '),
       date: new Date().toISOString().split('T')[0],
-      category: isImage ? 'Prescription' : 'Metabolic & Lipid',
+      category: isPrescription ? 'Prescription' : 'Metabolic & Lipid',
       doctor: 'Dr. Anita Roy, MD',
       facility: 'Apex Diagnostics & Medical Center',
       fileName: file.name,
@@ -52,11 +64,63 @@ export const RecordsView: React.FC<RecordsViewProps> = ({
       fileType: (isImage ? 'png' : 'pdf') as 'pdf' | 'png' | 'jpg',
       status: 'analyzed',
       summary: {
-        en: `Uploaded ${file.name} successfully analyzed. Ready for clinical review.`,
-        hi: `अपलोड किया गया दस्तावेज़ (${file.name}) सफलतापूर्वक विश्लेषित कर लिया गया है।`,
-        it: `Documento (${file.name}) caricato ed elaborato con successo.`
+        en: `Uploaded ${file.name} successfully analyzed. Key clinical biomarkers decoded and synchronized to Diet & Symptom triage.`,
+        hi: `अपलोड किया गया दस्तावेज़ (${file.name}) सफलतापूर्वक विश्लेषित कर लिया गया है। मुख्य बायोमार्कर आहार व लक्षण प्रणाली से जुड़ चुके हैं।`,
+        it: `Documento (${file.name}) elaborato con successo. Biomarcatori clinici sincronizzati con dieta e controllo sintomi.`
       },
-      parameters: []
+      parameters: isPrescription ? [] : [
+        {
+          name: 'Fasting Blood Sugar (Glucose)',
+          result: 114,
+          unit: 'mg/dL',
+          referenceRange: '70 - 99 mg/dL',
+          status: 'borderline',
+          simpleExplanation: {
+            en: 'Measures circulating blood sugar after an overnight fast.',
+            hi: 'रात भर भूखे रहने के बाद खून में शुगर की मात्रा।',
+            it: 'Quantità di glucosio circolante a digiuno.'
+          },
+          possibleSignificance: {
+            en: 'Mildly elevated pre-diabetic range. Low-GI diet suggested.',
+            hi: 'हल्का सा बढ़ा हुआ स्तर। संतुलित आहार की सिफारिश की जाती है।',
+            it: 'Lievemente alterato. Si raccomanda alimentazione a basso indice glicemico.'
+          }
+        },
+        {
+          name: 'Serum Creatinine',
+          result: 0.95,
+          unit: 'mg/dL',
+          referenceRange: '0.7 - 1.3 mg/dL',
+          status: 'normal',
+          simpleExplanation: {
+            en: 'Key waste product filtered by the kidneys.',
+            hi: 'गुर्दे द्वारा फिल्टर किया जाने वाला अपशिष्ट उत्पाद।',
+            it: 'Prodotto di scarto filtrato dai reni.'
+          },
+          possibleSignificance: {
+            en: 'Healthy renal filtration rate and functioning kidneys.',
+            hi: 'गुर्दे का कार्य सामान्य और सुरक्षित है।',
+            it: 'Ottimale efficienza e filtrazione renale.'
+          }
+        },
+        {
+          name: 'Total Cholesterol',
+          result: 208,
+          unit: 'mg/dL',
+          referenceRange: '< 200 mg/dL',
+          status: 'borderline',
+          simpleExplanation: {
+            en: 'Measure of overall lipid fats in your bloodstream.',
+            hi: 'रक्त में कोलेस्ट्रॉल की कुल मात्रा।',
+            it: 'Quantità totale di grassi lipidici circolanti.'
+          },
+          possibleSignificance: {
+            en: 'Borderline elevated. High-soluble fiber foods recommended.',
+            hi: 'हल्का सा बढ़ा हुआ। घुलनशील फाइबर का सेवन बढ़ाएं।',
+            it: 'Leggermente alto. Consigliate fibre solubili.'
+          }
+        }
+      ]
     };
 
     addReport(newReport);
@@ -92,6 +156,13 @@ export const RecordsView: React.FC<RecordsViewProps> = ({
           {t('recordsSubtitle')}
         </p>
       </div>
+
+      {/* Synchronized Health Context Bar across the 5 modules */}
+      <SynchronizedContextBar
+        currentModule="medical_recorder"
+        onOpenSyncCenter={onOpenSyncCenter || (() => {})}
+        onNavigate={onNavigate || (() => {})}
+      />
 
       {/* Upload Zone */}
       <div className="p-6 sm:p-8 rounded-3xl bg-white border-2 border-dashed border-teal-300/80 hover:border-teal-500 bg-teal-50/20 hover:bg-teal-50/40 transition-all text-center space-y-3 cursor-pointer relative">
@@ -190,6 +261,33 @@ export const RecordsView: React.FC<RecordsViewProps> = ({
                     <p className="text-[11px] text-slate-400 mt-1">
                       {report.facility} ({report.doctor})
                     </p>
+
+                    {/* Synchronized Pipeline Badges */}
+                    <div className="flex flex-wrap items-center gap-1.5 mt-2">
+                      {report.category === 'Prescription' ? (
+                        <>
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-indigo-50 border border-indigo-200 text-indigo-700 text-[10px] font-semibold">
+                            <CalendarClock className="w-3 h-3" />
+                            <span>Synced to Medicine Tracker</span>
+                          </span>
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-50 border border-emerald-200 text-emerald-700 text-[10px] font-semibold">
+                            <Apple className="w-3 h-3" />
+                            <span>Meal Timing Synced</span>
+                          </span>
+                        </>
+                      ) : (
+                        <>
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-50 border border-amber-200 text-amber-800 text-[10px] font-semibold">
+                            <Activity className="w-3 h-3" />
+                            <span>Live in Report Explainer</span>
+                          </span>
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-teal-50 border border-teal-200 text-teal-800 text-[10px] font-semibold">
+                            <Apple className="w-3 h-3" />
+                            <span>Feeds Diet Recommendations</span>
+                          </span>
+                        </>
+                      )}
+                    </div>
                   </div>
                 </div>
 

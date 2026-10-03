@@ -6,6 +6,7 @@ import { Sidebar } from './components/Sidebar';
 import { EmergencyModal } from './components/EmergencyModal';
 import { DisclaimerModal } from './components/DisclaimerModal';
 import { AuthModal } from './components/AuthModal';
+import { HealthSyncCenterModal } from './components/HealthSyncCenter';
 
 import { LandingView } from './views/LandingView';
 import { DashboardView } from './views/DashboardView';
@@ -42,6 +43,7 @@ const MainAppContent: React.FC = () => {
   const [emergencyCustomMsg, setEmergencyCustomMsg] = useState<string>('');
   const [disclaimerModalOpen, setDisclaimerModalOpen] = useState<boolean>(false);
   const [authModalOpen, setAuthModalOpen] = useState<boolean>(false);
+  const [syncCenterModalOpen, setSyncCenterModalOpen] = useState<boolean>(false);
 
   // Dynamic parameters for sub-view transitions
   const [symptomQuery, setSymptomQuery] = useState<string>('');
@@ -75,6 +77,7 @@ const MainAppContent: React.FC = () => {
         onOpenEmergency={() => triggerEmergency()}
         onOpenAuth={() => setAuthModalOpen(true)}
         onOpenDisclaimer={() => setDisclaimerModalOpen(true)}
+        onOpenSyncCenter={() => setSyncCenterModalOpen(true)}
         sidebarOpen={sidebarOpen}
         setSidebarOpen={setSidebarOpen}
         activeView={activeView}
@@ -91,6 +94,7 @@ const MainAppContent: React.FC = () => {
           setIsOpen={setSidebarOpen}
           onOpenEmergency={() => triggerEmergency()}
           onOpenDisclaimer={() => setDisclaimerModalOpen(true)}
+          onOpenSyncCenter={() => setSyncCenterModalOpen(true)}
         />
 
         {/* Dynamic Main Viewport */}
@@ -107,6 +111,7 @@ const MainAppContent: React.FC = () => {
               onNavigate={(view) => setActiveView(view)}
               onQuickSymptomCheck={handleQuickSymptomCheck}
               onQuickAiChat={handleQuickAiChat}
+              onOpenSyncCenter={() => setSyncCenterModalOpen(true)}
             />
           )}
 
@@ -114,6 +119,9 @@ const MainAppContent: React.FC = () => {
             <SymptomsView
               initialQuery={symptomQuery}
               onOpenEmergency={() => triggerEmergency('Emergency Red-Flag Symptoms Detected in Symptom Checker!')}
+              onAskAiAboutSymptoms={handleQuickAiChat}
+              onNavigate={(view) => setActiveView(view)}
+              onOpenSyncCenter={() => setSyncCenterModalOpen(true)}
             />
           )}
 
@@ -121,12 +129,16 @@ const MainAppContent: React.FC = () => {
             <RecordsView
               onNavigateToExplanation={handleNavigateToExplanation}
               onNavigateToPrescription={() => setActiveView('prescription')}
+              onNavigate={(view) => setActiveView(view)}
+              onOpenSyncCenter={() => setSyncCenterModalOpen(true)}
             />
           )}
 
           {activeView === 'prescription' && (
             <PrescriptionView
               onNavigateToTracker={() => setActiveView('medicines')}
+              onNavigate={(view) => setActiveView(view)}
+              onOpenSyncCenter={() => setSyncCenterModalOpen(true)}
             />
           )}
 
@@ -134,15 +146,23 @@ const MainAppContent: React.FC = () => {
             <ReportExplanationView
               initialReportId={reportParamId}
               onAskAiAboutReport={handleQuickAiChat}
+              onNavigate={(view) => setActiveView(view)}
+              onOpenSyncCenter={() => setSyncCenterModalOpen(true)}
             />
           )}
 
           {activeView === 'medicines' && (
-            <MedicineTrackerView />
+            <MedicineTrackerView
+              onNavigate={(view) => setActiveView(view)}
+              onOpenSyncCenter={() => setSyncCenterModalOpen(true)}
+            />
           )}
 
           {activeView === 'diet_lifestyle' && (
-            <DietLifestyleView />
+            <DietLifestyleView
+              onNavigate={(view) => setActiveView(view)}
+              onOpenSyncCenter={() => setSyncCenterModalOpen(true)}
+            />
           )}
 
           {activeView === 'ai_assistant' && (
@@ -235,6 +255,15 @@ const MainAppContent: React.FC = () => {
       <AuthModal
         isOpen={authModalOpen}
         onClose={() => setAuthModalOpen(false)}
+      />
+
+      <HealthSyncCenterModal
+        isOpen={syncCenterModalOpen}
+        onClose={() => setSyncCenterModalOpen(false)}
+        onNavigate={(view) => {
+          setActiveView(view);
+          setSyncCenterModalOpen(false);
+        }}
       />
     </div>
   );

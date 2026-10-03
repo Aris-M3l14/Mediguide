@@ -10,15 +10,29 @@ import {
   Sparkles, 
   Flame, 
   X,
-  AlertCircle
+  AlertCircle,
+  Zap,
+  Stethoscope,
+  Apple,
+  FileText,
+  ChevronRight
 } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { usePatient } from '../context/PatientContext';
 import { Medication } from '../types';
+import { SynchronizedContextBar } from '../components/HealthSyncCenter';
 
-export const MedicineTrackerView: React.FC = () => {
+interface MedicineTrackerViewProps {
+  onNavigate?: (view: string) => void;
+  onOpenSyncCenter?: () => void;
+}
+
+export const MedicineTrackerView: React.FC<MedicineTrackerViewProps> = ({
+  onNavigate,
+  onOpenSyncCenter
+}) => {
   const { t } = useLanguage();
-  const { medications, toggleMedicationTaken, addMedication } = usePatient();
+  const { medications, toggleMedicationTaken, addMedication, reports, symptomHistory } = usePatient();
   const [modalOpen, setModalOpen] = useState(false);
 
   // New medication form states
@@ -113,6 +127,60 @@ export const MedicineTrackerView: React.FC = () => {
         </div>
       </div>
 
+      {/* Synchronized Health Context Bar across the 5 modules */}
+      <SynchronizedContextBar
+        currentModule="medicine_tracker"
+        onOpenSyncCenter={onOpenSyncCenter || (() => {})}
+        onNavigate={onNavigate || (() => {})}
+      />
+
+      {/* Synchronized Medication Intelligence & Cross-Module Safety Box */}
+      <div className="p-5 rounded-3xl bg-white border border-slate-200 shadow-xs space-y-3">
+        <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+          <div className="flex items-center gap-2">
+            <Zap className="w-4 h-4 text-teal-600" />
+            <h3 className="text-sm font-bold text-slate-900">
+              Synchronized Clinical Safety & Food Timings
+            </h3>
+          </div>
+          <span className="text-[10px] font-bold text-teal-800 bg-teal-50 px-2.5 py-1 rounded-xl border border-teal-200 uppercase">
+            Cross-Referenced
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+          <div className="p-3 rounded-2xl bg-indigo-50/60 border border-indigo-200 space-y-1">
+            <span className="font-bold text-indigo-900 flex items-center gap-1.5 uppercase text-[10px]">
+              <FileText className="w-3.5 h-3.5 text-indigo-600" />
+              <span>Prescription Source</span>
+            </span>
+            <p className="text-indigo-950 font-medium">
+              Extracted from Dr. Anita Roy (Cardiology) on file in Medical Recorder. 4 active medications synced.
+            </p>
+          </div>
+
+          <div className="p-3 rounded-2xl bg-emerald-50/60 border border-emerald-200 space-y-1">
+            <span className="font-bold text-emerald-900 flex items-center gap-1.5 uppercase text-[10px]">
+              <Apple className="w-3.5 h-3.5 text-emerald-600" />
+              <span>Diet Meal Synchronization</span>
+            </span>
+            <p className="text-emerald-950 font-medium">
+              Metformin timed with breakfast & dinner; Telmisartan after breakfast. Prevents stomach irritation.
+            </p>
+          </div>
+
+          <div className="p-3 rounded-2xl bg-amber-50/60 border border-amber-200 space-y-1">
+            <span className="font-bold text-amber-900 flex items-center gap-1.5 uppercase text-[10px]">
+              <Stethoscope className="w-3.5 h-3.5 text-amber-600" />
+              <span>Symptom Checker Link</span>
+            </span>
+            <p className="text-amber-950 font-medium">
+              Feeling dizziness, nausea, or headache? Cross-reference dose timings in Symptom Checker.
+            </p>
+          </div>
+        </div>
+      </div>
+
       {/* Schedule Grouped by Time of Day */}
       <div className="space-y-6">
         {timeSlots.map((slot) => {
@@ -181,6 +249,30 @@ export const MedicineTrackerView: React.FC = () => {
                             <p className="text-[11px] text-slate-400 mt-1 italic">
                               "{med.doctorNotes}"
                             </p>
+                          )}
+
+                          {/* Cross-Module Quick Links */}
+                          {onNavigate && (
+                            <div className="flex flex-wrap items-center gap-1.5 mt-2 pt-1.5 border-t border-slate-100">
+                              <button
+                                type="button"
+                                onClick={() => onNavigate('symptoms')}
+                                className="text-[10px] font-semibold text-teal-700 hover:text-teal-900 bg-teal-50 hover:bg-teal-100 px-2 py-0.5 rounded-md flex items-center gap-1 transition cursor-pointer"
+                                title="Check for known side effects in Symptom Checker"
+                              >
+                                <Stethoscope className="w-2.5 h-2.5 text-teal-600" />
+                                <span>Check side effects</span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => onNavigate('diet_lifestyle')}
+                                className="text-[10px] font-semibold text-emerald-700 hover:text-emerald-900 bg-emerald-50 hover:bg-emerald-100 px-2 py-0.5 rounded-md flex items-center gap-1 transition cursor-pointer"
+                                title="View meal synchronization in Diet & Lifestyle"
+                              >
+                                <Apple className="w-2.5 h-2.5 text-emerald-600" />
+                                <span>Meal timing</span>
+                              </button>
+                            </div>
                           )}
                         </div>
                       </div>

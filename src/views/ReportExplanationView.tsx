@@ -7,24 +7,35 @@ import {
   ChevronRight, 
   FileText, 
   MessageSquare, 
-  Sparkles,
-  ArrowRight
+  Sparkles, 
+  ArrowRight,
+  Zap,
+  CalendarClock,
+  Apple,
+  Stethoscope,
+  Check
 } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { usePatient } from '../context/PatientContext';
-import { LabParameter } from '../types';
+import { LabParameter, SyncInsight } from '../types';
+import { SynchronizedContextBar } from '../components/HealthSyncCenter';
 
 interface ReportExplanationViewProps {
   initialReportId?: string;
   onAskAiAboutReport: (prompt: string) => void;
+  onNavigate?: (view: string) => void;
+  onOpenSyncCenter?: () => void;
 }
 
 export const ReportExplanationView: React.FC<ReportExplanationViewProps> = ({
   initialReportId,
-  onAskAiAboutReport
+  onAskAiAboutReport,
+  onNavigate,
+  onOpenSyncCenter
 }) => {
   const { t, language } = useLanguage();
-  const { reports } = usePatient();
+  const { reports, setDietFocus, addSyncInsight } = usePatient();
+  const [syncToast, setSyncToast] = useState<string | null>(null);
 
   // Find reports that have parameters (lab reports)
   const labReports = reports.filter(r => r.parameters && r.parameters.length > 0);
@@ -36,6 +47,40 @@ export const ReportExplanationView: React.FC<ReportExplanationViewProps> = ({
   );
 
   const currentReport = labReports.find(r => r.id === selectedReportId) || labReports[0];
+
+  const handleSyncParamToDiet = () => {
+    if (!selectedParam) return;
+    let newFocus = 'Targeted Lab-Adaptive Nutrition';
+    const pName = selectedParam.name.toLowerCase();
+
+    if (pName.includes('glucose') || pName.includes('sugar') || pName.includes('hba1c')) {
+      newFocus = 'Low Glycemic Index & Glucose Stabilization (Pre-diabetes Protocol)';
+    } else if (pName.includes('cholesterol') || pName.includes('ldl') || pName.includes('lipid') || pName.includes('triglycerides')) {
+      newFocus = 'DASH Low-Sodium & High Soluble Fiber (Cardiovascular Lipid Protocol)';
+    } else if (pName.includes('creatinine') || pName.includes('egfr') || pName.includes('urea')) {
+      newFocus = 'Renal Protection, Controlled Electrolytes & Optimal Hydration';
+    } else if (pName.includes('hemoglobin') || pName.includes('cbc') || pName.includes('rbc')) {
+      newFocus = 'Iron-Rich, B-Vitamin Fortified Energy & Cellular Vitality';
+    }
+
+    setDietFocus(newFocus);
+
+    const insight: SyncInsight = {
+      id: `sync_param_${Date.now()}`,
+      sourceModule: 'report_explainer',
+      targetModules: ['diet_lifestyle', 'symptom_checker'],
+      title: `Lab finding synchronized: ${selectedParam.name}`,
+      description: `${selectedParam.name} (${selectedParam.result} ${selectedParam.unit}) triggered automatic update of Diet & Lifestyle focus to: "${newFocus}".`,
+      severity: selectedParam.status === 'abnormal' ? 'important' : 'caution',
+      actionLabel: 'View Diet Adjustments',
+      actionTargetView: 'diet_lifestyle',
+      timestamp: 'Just now'
+    };
+    addSyncInsight(insight);
+
+    setSyncToast(`Diet plan synchronized to: ${selectedParam.name}!`);
+    setTimeout(() => setSyncToast(null), 3500);
+  };
 
   const getStatusBadge = (status: 'normal' | 'borderline' | 'abnormal') => {
     switch (status) {
@@ -105,6 +150,30 @@ export const ReportExplanationView: React.FC<ReportExplanationViewProps> = ({
           </select>
         </div>
       </div>
+
+      {/* Synchronized Health Context Bar across the 5 modules */}
+      <SynchronizedContextBar
+        currentModule="report_explainer"
+        onOpenSyncCenter={onOpenSyncCenter || (() => {})}
+        onNavigate={onNavigate || (() => {})}
+      />
+
+      {syncToast && (
+        <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-2xl text-emerald-800 text-xs font-semibold animate-fade-in flex items-center justify-between gap-2 shadow-2xs">
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+            <span>{syncToast}</span>
+          </div>
+          {onNavigate && (
+            <button
+              onClick={() => onNavigate('diet_lifestyle')}
+              className="text-xs font-bold text-teal-700 hover:underline cursor-pointer"
+            >
+              View Updated Diet Plan →
+            </button>
+          )}
+        </div>
+      )}
 
       {currentReport && (
         <>
@@ -232,6 +301,53 @@ export const ReportExplanationView: React.FC<ReportExplanationViewProps> = ({
                     <p className="text-xs text-amber-900/90 leading-relaxed">
                       "Doctor, how does my {selectedParam.name} of {selectedParam.result} {selectedParam.unit} correlate with my current dietary habits and medications?"
                     </p>
+                  </div>
+
+                  {/* Synchronized Cross-System Actions */}
+                  <div className="pt-2 border-t border-slate-100 space-y-2">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-teal-700 flex items-center gap-1">
+                      <Zap className="w-3.5 h-3.5 text-teal-600" />
+                      <span>Synchronize with other systems:</span>
+                    </span>
+
+                    <div className="flex flex-col gap-2">
+                      <button
+                        onClick={handleSyncParamToDiet}
+                        className="w-full py-2 px-3 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-bold transition flex items-center justify-between cursor-pointer border border-emerald-200 shadow-2xs"
+                      >
+                        <div className="flex items-center gap-2">
+                          <Apple className="w-3.5 h-3.5 text-emerald-600" />
+                          <span>Sync Biomarker to Diet & Lifestyle</span>
+                        </div>
+                        <ArrowRight className="w-3 h-3 text-emerald-600" />
+                      </button>
+
+                      {onNavigate && (
+                        <>
+                          <button
+                            onClick={() => onNavigate('symptoms')}
+                            className="w-full py-2 px-3 rounded-xl bg-teal-50 hover:bg-teal-100 text-teal-800 text-xs font-bold transition flex items-center justify-between cursor-pointer border border-teal-200 shadow-2xs"
+                          >
+                            <div className="flex items-center gap-2">
+                              <Stethoscope className="w-3.5 h-3.5 text-teal-600" />
+                              <span>Cross-reference in Symptom Checker</span>
+                            </div>
+                            <ArrowRight className="w-3 h-3 text-teal-600" />
+                          </button>
+
+                          <button
+                            onClick={() => onNavigate('prescription')}
+                            className="w-full py-2 px-3 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-800 text-xs font-bold transition flex items-center justify-between cursor-pointer border border-indigo-200 shadow-2xs"
+                          >
+                            <div className="flex items-center gap-2">
+                              <CalendarClock className="w-3.5 h-3.5 text-indigo-600" />
+                              <span>Check Doctor's Prescriptions</span>
+                            </div>
+                            <ArrowRight className="w-3 h-3 text-indigo-600" />
+                          </button>
+                        </>
+                      )}
+                    </div>
                   </div>
                 </div>
               ) : (

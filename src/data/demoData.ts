@@ -8,6 +8,13 @@ export const initialPatientProfile: PatientProfile = {
   bloodGroup: 'O+',
   heightCm: 175,
   weightKg: 78,
+  diabeticStatus: 'type_2',
+  fastingBloodGlucose: 118,
+  hba1c: 6.2,
+  systolicBp: 128,
+  diastolicBp: 82,
+  activityLevel: 'moderate',
+  medicalHistoryNotes: 'Mild essential hypertension diagnosed 2024. Borderline HbA1c managed with lifestyle & Metformin.',
   allergies: ['Penicillin', 'Sulfa drugs (mild rash)'],
   existingConditions: ['Hypertension (Mild)', 'Type 2 Diabetes (Borderline / Early stage)'],
   emergencyContact: {

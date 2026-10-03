@@ -9,7 +9,8 @@ import {
   LogOut, 
   LogIn, 
   ShieldCheck, 
-  ChevronDown 
+  ChevronDown,
+  Zap
 } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { usePatient } from '../context/PatientContext';
@@ -19,6 +20,7 @@ interface HeaderProps {
   onOpenEmergency: () => void;
   onOpenAuth: () => void;
   onOpenDisclaimer: () => void;
+  onOpenSyncCenter?: () => void;
   sidebarOpen: boolean;
   setSidebarOpen: (open: boolean) => void;
   activeView: string;
@@ -29,6 +31,7 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenEmergency,
   onOpenAuth,
   onOpenDisclaimer,
+  onOpenSyncCenter,
   sidebarOpen,
   setSidebarOpen,
   setActiveView
@@ -98,6 +101,21 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Right actions */}
         <div className="flex items-center gap-2 sm:gap-3">
+          {/* Synchronized Health Engine Quick Access */}
+          {onOpenSyncCenter && (
+            <button
+              onClick={onOpenSyncCenter}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl bg-teal-50 border border-teal-200/90 hover:bg-teal-100/80 text-teal-900 text-xs sm:text-sm font-bold transition shadow-2xs cursor-pointer group"
+              title="Integrated 5-System Health Synchronization Hub"
+            >
+              <Zap className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-teal-600 group-hover:scale-110 transition-transform" />
+              <span className="hidden md:inline">{t('syncHub') || 'Sync Hub'}</span>
+              <span className="px-1.5 py-0.2 rounded-full text-[9px] font-extrabold bg-teal-600 text-white uppercase tracking-tight">
+                5 Live
+              </span>
+            </button>
+          )}
+
           {/* Emergency SOS Button */}
           <button
             onClick={onOpenEmergency}

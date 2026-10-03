@@ -9,19 +9,42 @@ import {
   X, 
   Plus, 
   Sparkles,
-  Info
+  Info,
+  Zap,
+  CalendarClock,
+  Stethoscope,
+  FileText,
+  ChevronRight
 } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { usePatient } from '../context/PatientContext';
 import { demoDietAndLifestyle } from '../data/demoData';
+import { SynchronizedContextBar } from '../components/HealthSyncCenter';
 
-export const DietLifestyleView: React.FC = () => {
+interface DietLifestyleViewProps {
+  onNavigate?: (view: string) => void;
+  onOpenSyncCenter?: () => void;
+}
+
+export const DietLifestyleView: React.FC<DietLifestyleViewProps> = ({
+  onNavigate,
+  onOpenSyncCenter
+}) => {
   const { t, language } = useLanguage();
-  const { profile, hydrationCount, incrementHydration } = usePatient();
+  const { 
+    profile, 
+    hydrationCount, 
+    incrementHydration, 
+    dietFocus, 
+    medications, 
+    reports, 
+    symptomHistory 
+  } = usePatient();
 
   const recommendations = demoDietAndLifestyle[language] || demoDietAndLifestyle.en;
   const hydrationTargetGlasses = 10; // 10 x 250ml = 2.5L
   const hydrationProgress = Math.min(Math.round((hydrationCount / hydrationTargetGlasses) * 100), 100);
+  const latestSymptom = symptomHistory[0];
 
   return (
     <div className="space-y-6 pb-12 animate-fade-in max-w-4xl mx-auto">
@@ -48,6 +71,98 @@ export const DietLifestyleView: React.FC = () => {
         <div className="p-3.5 bg-amber-50/80 border border-amber-200/80 rounded-2xl text-amber-950 text-xs flex items-start gap-2.5">
           <ShieldAlert className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
           <span>{t('dietGeneralNotice')}</span>
+        </div>
+      </div>
+
+      {/* Synchronized Health Context Bar across the 5 modules */}
+      <SynchronizedContextBar
+        currentModule="diet_lifestyle"
+        onOpenSyncCenter={onOpenSyncCenter || (() => {})}
+        onNavigate={onNavigate || (() => {})}
+      />
+
+      {/* Dynamic 5-Module Interconnection Feed Card */}
+      <div className="p-5 rounded-3xl bg-white border border-slate-200 shadow-xs space-y-4">
+        <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+          <div className="flex items-center gap-2">
+            <Zap className="w-4 h-4 text-teal-600" />
+            <h3 className="text-sm font-bold text-slate-900">
+              Synchronized Clinical Data Driving This Plan
+            </h3>
+          </div>
+          <span className="text-[11px] font-bold text-teal-800 bg-teal-50 px-2.5 py-1 rounded-xl border border-teal-200">
+            Dynamic Focus: {dietFocus}
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+          {/* From Report Explainer */}
+          <div className="p-3.5 rounded-2xl bg-amber-50/60 border border-amber-200 space-y-2 flex flex-col justify-between">
+            <div className="space-y-1">
+              <span className="font-bold text-amber-900 flex items-center gap-1.5 uppercase text-[10px]">
+                <Activity className="w-3.5 h-3.5 text-amber-600" />
+                <span>Report Explainer Sync</span>
+              </span>
+              <p className="text-amber-950 font-medium">
+                Glucose 118 mg/dL (Pre-diabetic) & LDL 138 mg/dL: Soluble fiber (oats, legumes) & DASH sodium limit (&lt;2000mg) enforced.
+              </p>
+            </div>
+            {onNavigate && (
+              <button
+                onClick={() => onNavigate('report_explanation')}
+                className="text-amber-800 hover:text-amber-950 font-bold flex items-center gap-1 mt-1 text-[11px] cursor-pointer"
+              >
+                <span>Inspect Biomarkers</span>
+                <ChevronRight className="w-3 h-3" />
+              </button>
+            )}
+          </div>
+
+          {/* From Medicine Tracker */}
+          <div className="p-3.5 rounded-2xl bg-indigo-50/60 border border-indigo-200 space-y-2 flex flex-col justify-between">
+            <div className="space-y-1">
+              <span className="font-bold text-indigo-900 flex items-center gap-1.5 uppercase text-[10px]">
+                <CalendarClock className="w-3.5 h-3.5 text-indigo-600" />
+                <span>Medicine Tracker Sync</span>
+              </span>
+              <p className="text-indigo-950 font-medium">
+                Metformin 500mg (Morning/Night): Meals must be eaten within 15-20 min. Telmisartan taken with breakfast.
+              </p>
+            </div>
+            {onNavigate && (
+              <button
+                onClick={() => onNavigate('medicines')}
+                className="text-indigo-800 hover:text-indigo-950 font-bold flex items-center gap-1 mt-1 text-[11px] cursor-pointer"
+              >
+                <span>View Dosing Schedule</span>
+                <ChevronRight className="w-3 h-3" />
+              </button>
+            )}
+          </div>
+
+          {/* From Symptom Checker */}
+          <div className="p-3.5 rounded-2xl bg-teal-50/60 border border-teal-200 space-y-2 flex flex-col justify-between">
+            <div className="space-y-1">
+              <span className="font-bold text-teal-900 flex items-center gap-1.5 uppercase text-[10px]">
+                <Stethoscope className="w-3.5 h-3.5 text-teal-600" />
+                <span>Symptom Checker Sync</span>
+              </span>
+              <p className="text-teal-950 font-medium">
+                {latestSymptom
+                  ? `Recent: "${latestSymptom.symptoms.slice(0, 45)}...". Hydration goal maintained at 2.5L.`
+                  : 'No active emergency symptoms. Routine balanced diet active.'}
+              </p>
+            </div>
+            {onNavigate && (
+              <button
+                onClick={() => onNavigate('symptoms')}
+                className="text-teal-800 hover:text-teal-950 font-bold flex items-center gap-1 mt-1 text-[11px] cursor-pointer"
+              >
+                <span>Check New Symptoms</span>
+                <ChevronRight className="w-3 h-3" />
+              </button>
+            )}
+          </div>
         </div>
       </div>
 

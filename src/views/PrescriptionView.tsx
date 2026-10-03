@@ -8,16 +8,26 @@ import {
   CheckCircle2, 
   ArrowRight, 
   FileText,
-  Plus
+  Plus,
+  Stethoscope,
+  Apple,
+  Zap
 } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { usePatient } from '../context/PatientContext';
+import { SynchronizedContextBar } from '../components/HealthSyncCenter';
 
 interface PrescriptionViewProps {
   onNavigateToTracker: () => void;
+  onNavigate?: (view: string) => void;
+  onOpenSyncCenter?: () => void;
 }
 
-export const PrescriptionView: React.FC<PrescriptionViewProps> = ({ onNavigateToTracker }) => {
+export const PrescriptionView: React.FC<PrescriptionViewProps> = ({ 
+  onNavigateToTracker,
+  onNavigate,
+  onOpenSyncCenter
+}) => {
   const { t } = useLanguage();
   const { medications } = usePatient();
   const [synced, setSynced] = useState(false);
@@ -56,6 +66,13 @@ export const PrescriptionView: React.FC<PrescriptionViewProps> = ({ onNavigateTo
           </span>
         </div>
       </div>
+
+      {/* Synchronized Health Context Bar across the 5 modules */}
+      <SynchronizedContextBar
+        currentModule="medicine_tracker"
+        onOpenSyncCenter={onOpenSyncCenter || (() => {})}
+        onNavigate={onNavigate || onNavigateToTracker}
+      />
 
       {/* Doctor Meta Header */}
       <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -164,6 +181,38 @@ export const PrescriptionView: React.FC<PrescriptionViewProps> = ({ onNavigateTo
             <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200/80 text-xs text-slate-700">
               <strong className="text-slate-900 block mb-0.5">{t('instructions')}:</strong>
               {med.doctorNotes}
+            </div>
+
+            {/* Cross-Module Synchronization Links */}
+            <div className="pt-2 flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 text-xs">
+              <span className="text-[11px] text-slate-400 font-medium">Interconnected Clinical Links:</span>
+              <div className="flex flex-wrap gap-1.5">
+                {onNavigate && (
+                  <button
+                    onClick={() => onNavigate('symptoms')}
+                    className="px-2.5 py-1 rounded-lg bg-teal-50 hover:bg-teal-100 text-teal-800 text-[11px] font-bold transition flex items-center gap-1 cursor-pointer"
+                  >
+                    <Stethoscope className="w-3 h-3 text-teal-600" />
+                    <span>Check Side-Effects in Symptoms</span>
+                  </button>
+                )}
+                {onNavigate && (
+                  <button
+                    onClick={() => onNavigate('diet_lifestyle')}
+                    className="px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-[11px] font-bold transition flex items-center gap-1 cursor-pointer"
+                  >
+                    <Apple className="w-3 h-3 text-emerald-600" />
+                    <span>Food Timing & Diet Plan</span>
+                  </button>
+                )}
+                <button
+                  onClick={onNavigateToTracker}
+                  className="px-2.5 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-800 text-[11px] font-bold transition flex items-center gap-1 cursor-pointer"
+                >
+                  <Pill className="w-3 h-3 text-indigo-600" />
+                  <span>Dose Schedule</span>
+                </button>
+              </div>
             </div>
           </div>
         ))}

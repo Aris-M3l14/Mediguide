@@ -11,7 +11,8 @@ import {
   LineChart, 
   UserCircle2,
   ShieldCheck,
-  PhoneCall
+  PhoneCall,
+  Zap
 } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 
@@ -22,6 +23,7 @@ interface SidebarProps {
   setIsOpen: (open: boolean) => void;
   onOpenEmergency: () => void;
   onOpenDisclaimer: () => void;
+  onOpenSyncCenter?: () => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -30,7 +32,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
   isOpen,
   setIsOpen,
   onOpenEmergency,
-  onOpenDisclaimer
+  onOpenDisclaimer,
+  onOpenSyncCenter
 }) => {
   const { t } = useLanguage();
 
@@ -70,6 +73,32 @@ export const Sidebar: React.FC<SidebarProps> = ({
       >
         {/* Navigation list */}
         <div className="p-3 space-y-1 overflow-y-auto flex-1">
+          {/* Synchronized Health Hub Trigger */}
+          {onOpenSyncCenter && (
+            <button
+              onClick={() => {
+                onOpenSyncCenter();
+                setIsOpen(false);
+              }}
+              className="w-full mb-2 p-2.5 rounded-2xl bg-gradient-to-r from-teal-50 to-cyan-50 border border-teal-200/90 text-left hover:border-teal-400 hover:shadow-xs transition group cursor-pointer"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="p-1.5 rounded-xl bg-teal-600 text-white shadow-2xs group-hover:scale-105 transition-transform">
+                    <Zap className="w-3.5 h-3.5" />
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-bold text-slate-900 leading-tight">
+                      {t('navSyncCenter') || 'Health Sync Hub'}
+                    </h4>
+                    <p className="text-[10px] text-teal-700 font-medium">5 Systems Interconnected</p>
+                  </div>
+                </div>
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              </div>
+            </button>
+          )}
+
           <div className="px-3 py-1.5 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
             Navigation Menu
           </div>
