@@ -1,3 +1,4 @@
+import { supabase } from '../services/supabase';
 import React, { useState, useMemo } from 'react';
 import { 
   X, 
@@ -145,20 +146,29 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   if (!isOpen) return null;
 
   // Handlers
-  const handleLoginSubmit = (e: React.FormEvent) => {
+  const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    
     if (!loginEmail.trim() || !loginPassword) {
       setError('Please provide both your registered email and password.');
       return;
     }
-    const res = login(loginEmail, loginPassword);
-    if (!res.success) {
-      setError(res.error || 'Failed to authenticate.');
+
+    // Supabase Authentication
+    const { data, error: authError } = await supabase.auth.signInWithPassword({
+      email: loginEmail.trim(),
+      password: loginPassword,
+    });
+
+    if (authError) {
+      setError(authError.message);
       return;
     }
+
+    console.log('User logged in:', data.user);
     onClose();
-  };
+  }; 
 
   const handleForgotSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -224,7 +234,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   };
 
   // Step 3 Validation & Final Submission
-  const handleFinalSignup = (e: React.FormEvent) => {
+  const handleFinalSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
@@ -314,15 +324,59 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       } : undefined
     };
 
-    const res = signup(payload);
-    if (!res.success) {
-      setError(res.error || 'Failed to create patient account.');
+    // Supabase Registration
+    // 1. Supabase Authentication
+    const { data: authData, error: authError } = await supabase.auth.signUp({
+      email: payload.email,
+      password: payload.password,
+    });
+
+    if (authError) {
+      setError(authError.message);
       return;
     }
 
-    onClose();
-  };
+    if (!authData.user) {
+      setError('Failed to generate user session.');
+      return;
+    }
 
+    // 2. Insert Medical Profile into the Database
+    const { error: dbError } = await supabase
+      .from('patients')
+      .insert([
+        {
+          id: authData.user.id,
+          name: payload.name,
+          email: payload.email,
+          age: payload.age,
+          gender: payload.gender,
+          height_cm: payload.heightCm,
+          weight_kg: payload.weightKg,
+          blood_group: payload.bloodGroup,
+          activity_level: payload.activityLevel,
+          diabetic_status: payload.diabeticStatus,
+          fasting_blood_glucose: payload.fastingBloodGlucose,
+          hba1c: payload.hba1c,
+          systolic_bp: payload.systolicBp,
+          diastolic_bp: payload.diastolicBp,
+          allergies: payload.allergies,
+          existing_conditions: payload.existingConditions,
+          medical_history_notes: payload.medicalHistoryNotes,
+          emergency_contact: payload.emergencyContact,
+        }
+      ]);
+
+    if (dbError) {
+      console.error("Database Insert Error:", dbError);
+      setError('Account created, but failed to save medical profile. ' + dbError.message);
+      return;
+    }
+
+    console.log('Account and Medical Profile created successfully!');
+    alert('Account created! Please sign in.');
+    setTab('login');
+  };
   const toggleAllergy = (allergy: string) => {
     setSelectedAllergies(prev => 
       prev.includes(allergy) ? prev.filter(a => a !== allergy) : [...prev, allergy]
